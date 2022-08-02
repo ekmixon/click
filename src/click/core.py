@@ -375,11 +375,7 @@ class Context:
         self.ignore_unknown_options: bool = ignore_unknown_options
 
         if help_option_names is None:
-            if parent is not None:
-                help_option_names = parent.help_option_names
-            else:
-                help_option_names = ["--help"]
-
+            help_option_names = ["--help"] if parent is None else parent.help_option_names
         #: The names for the help options.
         self.help_option_names: t.List[str] = help_option_names
 
@@ -602,9 +598,7 @@ class Context:
         information on the help page.  It's automatically created by
         combining the info names of the chain of contexts to the root.
         """
-        rv = ""
-        if self.info_name is not None:
-            rv = self.info_name
+        rv = self.info_name if self.info_name is not None else ""
         if self.parent is not None:
             parent_command_path = [self.parent.command_path]
 
@@ -668,11 +662,7 @@ class Context:
         if self.default_map is not None:
             value = self.default_map.get(name)
 
-            if call and callable(value):
-                return value()
-
-            return value
-
+            return value() if call and callable(value) else value
         return None
 
     def fail(self, message: str) -> "te.NoReturn":
@@ -1079,12 +1069,11 @@ class BaseCommand:
                 e.show()
                 sys.exit(e.exit_code)
             except OSError as e:
-                if e.errno == errno.EPIPE:
-                    sys.stdout = t.cast(t.TextIO, PacifyFlushWrapper(sys.stdout))
-                    sys.stderr = t.cast(t.TextIO, PacifyFlushWrapper(sys.stderr))
-                    sys.exit(1)
-                else:
+                if e.errno != errno.EPIPE:
                     raise
+                sys.stdout = t.cast(t.TextIO, PacifyFlushWrapper(sys.stdout))
+                sys.stderr = t.cast(t.TextIO, PacifyFlushWrapper(sys.stderr))
+                sys.exit(1)
         except Exit as e:
             if standalone_mode:
                 sys.exit(e.exit_code)
@@ -1863,11 +1852,7 @@ class Group(MultiCommand):
         from .decorators import group
 
         if self.group_class is not None and "cls" not in kwargs:
-            if self.group_class is type:
-                kwargs["cls"] = type(self)
-            else:
-                kwargs["cls"] = self.group_class
-
+            kwargs["cls"] = type(self) if self.group_class is type else self.group_class
         def decorator(f: t.Callable[..., t.Any]) -> "Group":
             cmd = group(*args, **kwargs)(f)
             self.add_command(cmd)
@@ -2043,11 +2028,7 @@ class Parameter:
         # Default nargs to what the type tells us if we have that
         # information available.
         if nargs is None:
-            if self.type.is_composite:
-                nargs = self.type.arity
-            else:
-                nargs = 1
-
+            nargs = self.type.arity if self.type.is_composite else 1
         self.required = required
         self.callback = callback
         self.nargs = nargs
@@ -2097,7 +2078,7 @@ class Parameter:
                 )
 
             # Skip no default or callable default.
-            check_default = default if not callable(default) else None
+            check_default = None if callable(default) else default
 
             if check_default is not None:
                 if multiple:
@@ -2310,10 +2291,7 @@ class Parameter:
         if value is None:
             return True
 
-        if (self.nargs != 1 or self.multiple) and value == ():
-            return True
-
-        return False
+        return bool((self.nargs != 1 or self.multiple) and value == ())
 
     def process_value(self, ctx: Context, value: t.Any) -> t.Any:
         if value is not None:
@@ -2332,15 +2310,11 @@ class Parameter:
             return None
 
         if isinstance(self.envvar, str):
-            rv = os.environ.get(self.envvar)
-
-            if rv:
+            if rv := os.environ.get(self.envvar):
                 return rv
         else:
             for envvar in self.envvar:
-                rv = os.environ.get(envvar)
-
-                if rv:
+                if rv := os.environ.get(envvar):
                     return rv
 
         return None

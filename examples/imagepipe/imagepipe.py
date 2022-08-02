@@ -34,10 +34,6 @@ def process_commands(processors):
     for processor in processors:
         stream = processor(stream)
 
-    # Evaluate the stream and throw away the items.
-    for _ in stream:
-        pass
-
 
 def processor(f):
     """Helper decorator to rewrite a function so that it returns another

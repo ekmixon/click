@@ -191,7 +191,7 @@ def test_context_pushing():
         # Internal
         assert ctx._depth == 2
 
-    assert rv == []
+    assert not rv
 
     with ctx.scope():
         # Internal

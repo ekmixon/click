@@ -169,19 +169,7 @@ def _test_gen_func():
 
 @pytest.mark.skipif(WIN, reason="Different behavior on windows.")
 @pytest.mark.parametrize("cat", ["cat", "cat ", "cat "])
-@pytest.mark.parametrize(
-    "test",
-    [
-        # We need lambda here, because pytest will
-        # reuse the parameters, and then the generators
-        # are already used and will not yield anymore
-        ("just text\n", lambda: "just text"),
-        ("iterable\n", lambda: ["itera", "ble"]),
-        ("abcabc\n", lambda: _test_gen_func),
-        ("abcabc\n", lambda: _test_gen_func()),
-        ("012345\n", lambda: (c for c in range(6))),
-    ],
-)
+@pytest.mark.parametrize("test", [("just text\n", lambda: "just text"), ("iterable\n", lambda: ["itera", "ble"]), ("abcabc\n", lambda: _test_gen_func), ("abcabc\n", lambda: _test_gen_func()), ("012345\n", lambda: iter(range(6)))])
 def test_echo_via_pager(monkeypatch, capfd, cat, test):
     monkeypatch.setitem(os.environ, "PAGER", cat)
     monkeypatch.setattr(click._termui_impl, "isatty", lambda x: True)

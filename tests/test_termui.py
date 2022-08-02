@@ -409,10 +409,7 @@ def test_prompt_required_false(runner, args, expect):
     @click.option("-v", "--value", prompt=True, prompt_required=False)
     @click.option("-o")
     def cli(value, o):
-        if o is not None:
-            return value, o
-
-        return value
+        return (value, o) if o is not None else value
 
     result = runner.invoke(cli, args=args, input="prompt", standalone_mode=False)
     assert result.exception is None

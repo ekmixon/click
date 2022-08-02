@@ -135,8 +135,7 @@ def commit(repo, files, message):
     if not message:
         marker = "# Files to be committed:"
         hint = ["", "", marker, "#"]
-        for file in files:
-            hint.append(f"#   U {file}")
+        hint.extend(f"#   U {file}" for file in files)
         message = click.edit("\n".join(hint))
         if message is None:
             click.echo("Aborted!")

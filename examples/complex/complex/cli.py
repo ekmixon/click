@@ -30,10 +30,12 @@ cmd_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "commands")
 
 class ComplexCLI(click.MultiCommand):
     def list_commands(self, ctx):
-        rv = []
-        for filename in os.listdir(cmd_folder):
-            if filename.endswith(".py") and filename.startswith("cmd_"):
-                rv.append(filename[4:-3])
+        rv = [
+            filename[4:-3]
+            for filename in os.listdir(cmd_folder)
+            if filename.endswith(".py") and filename.startswith("cmd_")
+        ]
+
         rv.sort()
         return rv
 

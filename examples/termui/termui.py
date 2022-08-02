@@ -22,9 +22,10 @@ def colordemo():
 @cli.command()
 def pager():
     """Demonstrates using the pager."""
-    lines = []
-    for x in range(200):
-        lines.append(f"{click.style(str(x), fg='green')}. Hello World!")
+    lines = [
+        f"{click.style(str(x), fg='green')}. Hello World!" for x in range(200)
+    ]
+
     click.echo_via_pager("\n".join(lines))
 
 
@@ -119,14 +120,13 @@ def edit():
     """Opens an editor with some text in it."""
     MARKER = "# Everything below is ignored\n"
     message = click.edit(f"\n\n{MARKER}")
-    if message is not None:
-        msg = message.split(MARKER, 1)[0].rstrip("\n")
-        if not msg:
-            click.echo("Empty message!")
-        else:
-            click.echo(f"Message:\n{msg}")
-    else:
+    if message is None:
         click.echo("You did not enter anything!")
+
+    elif msg := message.split(MARKER, 1)[0].rstrip("\n"):
+        click.echo(f"Message:\n{msg}")
+    else:
+        click.echo("Empty message!")
 
 
 @cli.command()
